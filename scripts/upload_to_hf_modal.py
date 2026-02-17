@@ -1,46 +1,66 @@
 # scripts/upload_to_hf_modal.py
 # Upload trained model directly from Modal volume to Hugging Face.
-# No local download required!
+# No local download required — runs entirely on Modal.
 #
 # Usage:
 #   modal run scripts/upload_to_hf_modal.py --repo-id ngpsanjaya/vits-sinhala
 #   modal run scripts/upload_to_hf_modal.py --repo-id ngpsanjaya/vits-sinhala --private
 
-import sys
 from pathlib import Path
 
 import modal
 
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent
-if str(_PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(_PROJECT_ROOT))
-
-from scripts.train_modal import vol, image, RUN_DIR
-from sinhala_tts.training import CoquiTrainer
-
+# ---------------------------------------------------------------------------
+# Self-contained Modal infrastructure (no cross-imports needed)
+# ---------------------------------------------------------------------------
 app = modal.App("sinhala-tts-upload")
+
+vol = modal.Volume.from_name("sinhala-tts-vol", create_if_missing=False)
+
+RUN_DIR = Path("/vol/runs/vits_sinhala")
+
+image = (
+    modal.Image.debian_slim(python_version="3.11")
+    .pip_install("huggingface-hub>=0.34.0,<1.0")
+)
+
+
+def _find_latest_checkpoint(run_dir: Path) -> Path | None:
+    """Find the latest checkpoint or best_model in the run directory."""
+    candidates = []
+    for sub in sorted(run_dir.iterdir()) if run_dir.exists() else []:
+        if not sub.is_dir():
+            continue
+        best = sub / "best_model.pth"
+        if best.exists():
+            candidates.append(best)
+        for ckpt in sorted(sub.glob("checkpoint_*.pth")):
+            candidates.append(ckpt)
+    if not candidates:
+        return None
+    return max(candidates, key=lambda p: p.stat().st_mtime)
 
 
 @app.function(
     image=image,
     volumes={"/vol": vol},
     timeout=30 * 60,
-    secrets=[modal.Secret.from_name("huggingface-secret")],
+    secrets=[modal.Secret.from_name("huggingface")],
 )
 def upload_to_hf(repo_id: str, private: bool = False):
     """Upload best model + config from Modal volume directly to Hugging Face."""
     import os
     from huggingface_hub import HfApi, create_repo
 
-    hf_token = os.environ.get("HF_TOKEN")
+    hf_token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_TOKEN")
     if not hf_token:
         raise RuntimeError(
-            "HF_TOKEN not found. Create a Modal secret named 'huggingface-secret' "
-            "with key HF_TOKEN at https://modal.com/secrets"
+            "HF_TOKEN not found. Ensure your Modal secret 'huggingface' "
+            "has a key named HF_TOKEN or HUGGINGFACE_TOKEN."
         )
 
     # Find the latest checkpoint
-    ckpt = CoquiTrainer.find_latest_checkpoint(RUN_DIR)
+    ckpt = _find_latest_checkpoint(RUN_DIR)
     if ckpt is None:
         raise FileNotFoundError(f"No checkpoint found in {RUN_DIR}")
 
