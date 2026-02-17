@@ -15,8 +15,10 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from scripts.train_modal import app, vol, image, RUN_DIR
+from scripts.train_modal import vol, image, RUN_DIR
 from sinhala_tts.training import CoquiTrainer
+
+app = modal.App("sinhala-tts-upload")
 
 
 @app.function(
