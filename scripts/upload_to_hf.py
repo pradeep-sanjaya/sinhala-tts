@@ -99,20 +99,44 @@ pipeline_tag: text-to-speech
 
 # VITS Sinhala TTS
 
-A VITS text-to-speech model trained on Sinhala speech data using [Coqui TTS](https://github.com/coqui-ai/TTS).
+A [VITS](https://arxiv.org/abs/2106.06103) text-to-speech model for **Sinhala (සිංහල)**, trained using [Coqui TTS](https://github.com/coqui-ai/TTS).
+
+**GitHub**: [pradeep-sanjaya/sinhala-tts](https://github.com/pradeep-sanjaya/sinhala-tts)
 
 ## Training Details
 
-- **Model**: VITS (Variational Inference with adversarial learning for end-to-end Text-to-Speech)
-- **Language**: Sinhala (සිංහල)
-- **Epochs**: 300
-- **Final mel loss**: ~18.92
-- **Dataset**: [Multi-speaker TTS Dataset Sinhala](https://www.kaggle.com/datasets/keshan/multi-speaket-tts-dataset-sinhala)
-- **GPU**: NVIDIA A100-80GB (via Modal)
+| Detail | Value |
+|--------|-------|
+| **Model** | VITS (Variational Inference with adversarial learning for end-to-end Text-to-Speech) |
+| **Language** | Sinhala (සිංහල) |
+| **Epochs** | 300 |
+| **Final mel loss** | ~18.92 |
+| **Dataset** | [Multi-speaker TTS Dataset Sinhala](https://www.kaggle.com/datasets/keshan/multi-speaket-tts-dataset-sinhala) |
+| **GPU** | NVIDIA A100-80GB (via [Modal](https://modal.com)) |
+| **Training time** | ~3.2 hours |
+| **Framework** | [Coqui TTS](https://github.com/coqui-ai/TTS) 0.27.5 |
 
 ## Usage
 
-### With Coqui TTS
+### From Hugging Face
+
+```python
+from huggingface_hub import hf_hub_download
+from TTS.utils.synthesizer import Synthesizer
+
+config_path = hf_hub_download(repo_id="{args.repo_id}", filename="config.json")
+model_path = hf_hub_download(repo_id="{args.repo_id}", filename="model.pth")
+
+synthesizer = Synthesizer(
+    tts_checkpoint=model_path,
+    tts_config_path=config_path,
+    use_cuda=True,
+)
+
+wav = synthesizer.tts("ආයුබෝවන්")
+```
+
+### With local checkpoint
 
 ```python
 from TTS.utils.synthesizer import Synthesizer
@@ -126,28 +150,28 @@ synthesizer = Synthesizer(
 outputs = synthesizer.tts("ආයුබෝවන්")
 ```
 
-### From Hugging Face
+### Save to WAV
 
 ```python
-from huggingface_hub import hf_hub_download
+import numpy as np
+import soundfile as sf
 
-config_path = hf_hub_download(repo_id="{args.repo_id}", filename="config.json")
-model_path = hf_hub_download(repo_id="{args.repo_id}", filename="model.pth")
-
-from TTS.utils.synthesizer import Synthesizer
-
-synthesizer = Synthesizer(
-    tts_checkpoint=model_path,
-    tts_config_path=config_path,
-    use_cuda=True,
-)
-
-wav = synthesizer.tts("ආයුබෝවන්")
+sf.write("output.wav", np.array(wav), synthesizer.tts_config.audio.sample_rate)
 ```
+
+## Training & Deployment
+
+The full training pipeline supports **Modal**, **Kaggle**, **Google Colab**, and **AWS SageMaker**.
+
+See the [GitHub repo](https://github.com/pradeep-sanjaya/sinhala-tts) for:
+- Platform-specific configs and training scripts
+- Kaggle and Colab notebooks for free GPU training
+- Inference scripts (Modal and local)
+- Checkpoint resume support
 
 ## License
 
-Please check the dataset license for usage terms.
+MIT. Please check the [dataset license](https://www.kaggle.com/datasets/keshan/multi-speaket-tts-dataset-sinhala) for data usage terms.
 """
 
     api.upload_file(
