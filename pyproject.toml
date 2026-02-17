@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sinhala-tts"
+version = "0.1.0"
+description = "VITS Text-to-Speech model for Sinhala, trainable on Modal, Kaggle, Colab, and SageMaker"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "ngpsanjaya" }]
+license = { text = "MIT" }
+
+dependencies = [
+  "coqui-tts==0.27.5",
+  "soundfile",
+  "numpy==2.2.6",
+  "numba==0.61.2",
+  "llvmlite==0.44.0",
+  "librosa==0.11.0",
+  "transformers==4.57.6",
+]
+
+[project.optional-dependencies]
+# Modal cloud training: pip install -e ".[modal]"
+modal = [
+  "modal",
+  "kagglehub[pandas-datasets]",
+  "pandas",
+]
+# Local inference only: pip install -e ".[inference]"
+inference = [
+  "torch>=2.6.0",
+  "torchaudio>=2.6.0",
+]
+# Hugging Face upload: pip install -e ".[hf]"
+hf = [
+  "huggingface_hub>=0.34.0",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sinhala_tts*"]

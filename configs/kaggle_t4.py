@@ -1,0 +1,23 @@
+# ============================================================
+# Kaggle T4 Training Configuration
+#
+# Free GPU training on Kaggle (Tesla T4, 16 GB VRAM).
+# 12-hour session limit — use checkpointing to resume.
+# Batch size 8 to fit in 16 GB VRAM.
+# ============================================================
+
+gpu = "T4"
+timeout_hours = 12
+
+training = dict(
+    batch_size=8,
+    eval_batch_size=4,
+    max_audio_len=500000,   # ~22.7s at 22050 Hz
+    epochs=100,             # Per session; resume across sessions
+    mixed_precision=True,
+    num_loader_workers=2,
+    num_eval_loader_workers=1,
+    run_eval_steps=1000,
+    save_step=1000,
+    print_step=250,
+)

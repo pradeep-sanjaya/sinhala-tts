@@ -1,0 +1,35 @@
+*.swp
+*.pyc
+~$*.xlsx
+.idea/
+__pycache__/
+.ipynb_checkpoints/
+
+# folders
+checkpoints/
+samples/
+data/
+tmp/
+.vscode/
+temp/
+.dist_test/
+
+*.egg-info/
+tensorboard/
+wandb/
+output/
+
+# Model artifacts
+runs/
+model_export/
+*.pth
+*.wav
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.venv/
+venv/
