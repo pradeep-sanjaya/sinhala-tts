@@ -22,9 +22,14 @@ from huggingface_hub import HfApi, create_repo
 
 def find_best_model(model_dir: Path) -> Path:
     """Find the best model checkpoint in the directory."""
+    # Check for best_model.pth first (plain name)
+    plain = model_dir / "best_model.pth"
+    if plain.exists():
+        return plain
+    # Then check for best_model_<step>.pth
     best_models = sorted(model_dir.glob("best_model_*.pth"))
     if not best_models:
-        raise FileNotFoundError(f"No best_model_*.pth found in {model_dir}")
+        raise FileNotFoundError(f"No best_model*.pth found in {model_dir}")
     # Pick the one with the highest step number
     return max(best_models, key=lambda p: int(p.stem.split("_")[-1]))
 
