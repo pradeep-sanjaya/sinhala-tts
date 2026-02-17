@@ -1,7 +1,7 @@
 # Sinhala TTS
 
 <div align="center">
-    <a href="https://github.com/ngpsanjaya/sinhala-tts"><img src="https://img.shields.io/badge/Github-Star-yellow?logo=Github&amp"></a>
+    <a href="https://github.com/pradeep-sanjaya/sinhala-tts"><img src="https://img.shields.io/badge/Github-Star-yellow?logo=Github&amp"></a>
     <a href="https://huggingface.co/ngpsanjaya/vits-sinhala"><img src="https://img.shields.io/badge/Huggingface-Download-orange?logo=Huggingface&amp"></a>
 </div>
 
